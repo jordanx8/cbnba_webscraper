@@ -64,5 +64,5 @@ func writeJSON(data []Player) {
 		return
 	}
 
-	_ = ioutil.WriteFile("playerdata.json", file, 0644)
+	_ = ioutil.WriteFile("../playerdata.json", file, 0644)
 }

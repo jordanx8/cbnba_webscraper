@@ -1,4 +1,4 @@
-module github.ibm.com/Jordan-Gary/webscraper
+module github.ibm.com/Jordan-Gary/webscraper/espn_webscraper
 
 go 1.16
 

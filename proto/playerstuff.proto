@@ -1,0 +1,16 @@
+syntax="proto3";
+
+option go_package = "github.com/jordanx8/webscraper";
+
+package webscraper;
+
+service webscraperService {
+    
+}
+
+message Player {
+    int32 rank = 1;
+    string name = 2;
+    string school = 3;
+    string position = 4;
+}

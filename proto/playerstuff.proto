@@ -5,7 +5,7 @@ option go_package = "github.com/jordanx8/webscraper";
 package webscraper;
 
 service webscraperService {
-    
+    rpc SayHello (HelloRequest) returns (HelloReply) {}
 }
 
 message Player {
@@ -14,3 +14,15 @@ message Player {
     string school = 3;
     string position = 4;
 }
+
+
+// The request message containing the user's name.
+message HelloRequest {
+    string name = 1;
+  }
+  
+  // The response message containing the greetings
+  message HelloReply {
+    string message = 1;
+  }
+  

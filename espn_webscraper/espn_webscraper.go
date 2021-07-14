@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/gocolly/colly"
@@ -22,26 +22,35 @@ type Player struct {
 	NextGame string `json:"nextGame"`
 }
 
+type CollegeTeam struct {
+	Name string `json:"name"`
+	ID   string `json:"id"`
+}
+
 func ScrapeESPNTop100() {
-	// "children".Pluck()
-	// teamsJSON := "https://site.web.api.espn.com/apis/v2/sports/basketball/mens-college-basketball/standings?region=us&lang=en&contentorigin=espn&group=50&sort=playoffseed%3Aasc%2Cvsconf_winpercent%3Adesc%2Cvsconf_wins%3Adesc%2Cvsconf_losses%3Aasc%2Cvsconf_gamesbehind%3Aasc&includestats=playoffseed%2Cvsconf%2Cvsconf_gamesbehind%2Cvsconf_winpercent%2Ctotal%2Cwinpercent%2Chome%2Croad%2Cstreak%2Cvsaprankedteams%2Cvsusarankedteams&season=2021"
-	// client := resty.New()
-	// resp, err := client.R().Get(teamsJSON)
-	// if resp.StatusCode() == 200 {
-	// 	if parsedResponse := resp.Body(); err == nil {
-	// 		var teamInfo map[string]interface{}
-	// 		err := json.Unmarshal(parsedResponse, &teamInfo)
-	// 		if err != nil {
-	// 			return
-	// 		}
-	// 		fmt.Println(teamInfo[""])
-	// 	}
-	// }
+	fmt.Println("ScrapeESPNTop100()")
 
 	allPlayers := make([]Player, 0)
+	allCollegeTeams := make([]CollegeTeam, 0)
 
 	collector := colly.NewCollector(
 		colly.AllowedDomains("espn.com", "www.espn.com"))
+
+	collector.OnHTML(".TeamLinks.flex.items-center div", func(element *colly.HTMLElement) {
+		teamName := element.ChildText("h2.di.clr-gray-01.h5")
+		if teamName == "" {
+			return
+		}
+		teamURL := element.ChildAttr("a", "href")
+		teamURLEnd := strings.Split(teamURL, "/mens-college-basketball/team/_/id/")
+		re := regexp.MustCompile("[0-9]+")
+		teamID := re.FindAllString(teamURLEnd[1], -1)
+		collegeTeam := CollegeTeam{
+			Name: teamName,
+			ID:   teamID[0],
+		}
+		allCollegeTeams = append(allCollegeTeams, collegeTeam)
+	})
 
 	collector.OnHTML(".draftTable__row li", func(element *colly.HTMLElement) {
 		playerRank, err := strconv.Atoi(element.ChildText("span.draftTable__headline--pick"))
@@ -54,7 +63,7 @@ func ScrapeESPNTop100() {
 			Name:     element.ChildText("span.draftTable__headline--player"),
 			School:   element.ChildText("span.draftTable__headline--school"),
 			Position: element.ChildText("span.draftTable__headline--pos"),
-			NextGame: GetNextEvent(element.ChildText("span.draftTable__headline--school")),
+			NextGame: GetNextEvent(element.ChildText("span.draftTable__headline--school"), allCollegeTeams),
 		}
 
 		allPlayers = append(allPlayers, player)
@@ -69,54 +78,72 @@ func ScrapeESPNTop100() {
 		collector.Visit(nextPage)
 	})
 
+	collector.Visit("https://www.espn.com/mens-college-basketball/teams")
+
 	collector.Visit("https://www.espn.com/nba/draft/bestavailable/_/position/ovr/page/1")
 
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", " ")
-	enc.Encode(allPlayers)
+	// enc := json.NewEncoder(os.Stdout)
+	// enc.SetIndent("", " ")
+	// enc.Encode(allPlayers)
 
-	WriteJSON(allPlayers)
+	WritePlayerJSON(allPlayers)
+	WriteTeamJSON(allCollegeTeams)
 }
 
-func WriteJSON(data []Player) {
+func WritePlayerJSON(data []Player) {
+	fmt.Println("Attempting to create playerdata.json.")
 	file, err := json.MarshalIndent(data, "", " ")
 	if err != nil {
 		fmt.Println("Unable to create JSON file.")
 		return
 	}
 
-	_ = ioutil.WriteFile("../playerdata.json", file, 0644)
+	_ = ioutil.WriteFile("./playerdata.json", file, 0644)
+	fmt.Println("Success.")
 }
 
-func GetNextEvent(school string) string {
+func WriteTeamJSON(data []CollegeTeam) {
+	fmt.Println("Attempting to create collegeteams.json.")
+	file, err := json.MarshalIndent(data, "", " ")
+	if err != nil {
+		fmt.Println("Unable to create JSON file.")
+		return
+	}
+
+	_ = ioutil.WriteFile("./collegeteams.json", file, 0644)
+	fmt.Println("Success.")
+}
+
+func GetNextEvent(school string, allCollegeTeams []CollegeTeam) string {
 	api := fmt.Sprintf("https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams/%s", school)
 	client := resty.New()
 	resp, err := client.R().Get(api)
 	if resp.StatusCode() == 200 {
 		if parsedResponse := resp.String(); err == nil {
-			// var playerInfo map[string]interface{}
-			// err := json.Unmarshal(parsedResponse, &playerInfo)
-			// if err != nil {
-			// 	return school
-			// }
 			nextevent := gojsonq.New().FromString(parsedResponse).From("team.nextEvent").Pluck("date")
-			// parsedResponse, err = json.MarshalIndent(playerInfo, "", " ")
-			// if err != nil {
-			// 	return school
-			// }
 			str := fmt.Sprintf("%v", nextevent)
 			re := regexp.MustCompile(`\[([^\[\]]*)\]`)
 			submatchall := re.FindAllString(str, -1)
 			for _, element := range submatchall {
 				element = strings.Trim(element, "[")
 				element = strings.Trim(element, "]")
-				return element
+				layout := "2006-01-02T15:04Z"
+				t, err := time.Parse(layout, element)
+				if err != nil {
+					fmt.Println(err)
+				}
+				location, err := time.LoadLocation("America/New_York")
+				if err != nil {
+					fmt.Println(err)
+				}
+				tlocal := t.In(location)
+				return tlocal.Format(time.UnixDate)
 			}
-			// date, err := time.Parse("2006-01-02 15:04", str)
-			// if err != nil {
-			// 	panic(err)
-			// }
-			// fmt.Println("My Date Reformatted:\t", date.Format(time.RFC822))
+		}
+	}
+	for a := range allCollegeTeams {
+		if strings.HasPrefix(allCollegeTeams[a].Name, school) {
+			return GetNextEvent(allCollegeTeams[a].ID, allCollegeTeams)
 		}
 	}
 	return school

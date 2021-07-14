@@ -18,9 +18,12 @@ type Player struct {
 	Name     string `json:"name"`
 	School   string `json:"school"`
 	Position string `json:"position"`
+	NextGame string `json:"nextGame"`
 }
 
-func seedPlayerData() {
+func SeedPlayerData() {
+
+	fmt.Println("SeedPlayerData()")
 
 	clientOptions := options.Client().ApplyURI("mongodb://localhost")
 	//connect to MongoDb, if error then display the issue
@@ -34,20 +37,20 @@ func seedPlayerData() {
 	ctx, _ := context.WithTimeout(context.Background(), 240*time.Second)
 
 	col := client.Database("cbnba").Collection("PlayerData")
-
+	if err = col.Drop(ctx); err != nil {
+		log.Fatal(err)
+	}
+	col = client.Database("cbnba").Collection("PlayerData")
 	//check for error again
 	if err != nil {
 		log.Fatal(err)
 	} //else mongo has been connected
 	fmt.Println("Successfully connected to Mongo")
 
-	byteValues, err := ioutil.ReadFile("../playerdata.json")
+	byteValues, err := ioutil.ReadFile("./playerdata.json")
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(reflect.TypeOf(byteValues))
-	fmt.Println(byteValues)
-	fmt.Println(string(byteValues))
 
 	var docs []Player
 
@@ -66,5 +69,7 @@ func seedPlayerData() {
 			fmt.Println(result)
 		}
 	}
+
+	fmt.Println("playerdata.json seeding finished.")
 
 }

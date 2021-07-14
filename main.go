@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	webscraper "github.com/jordanx8/webscraper/espn_webscraper"
 	seeder "github.com/jordanx8/webscraper/mongodb_seeder"
 )

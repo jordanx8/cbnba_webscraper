@@ -79,15 +79,9 @@ func ScrapeESPNTop100() {
 	})
 
 	collector.Visit("https://www.espn.com/mens-college-basketball/teams")
-
 	collector.Visit("https://www.espn.com/nba/draft/bestavailable/_/position/ovr/page/1")
 
-	// enc := json.NewEncoder(os.Stdout)
-	// enc.SetIndent("", " ")
-	// enc.Encode(allPlayers)
-
 	WritePlayerJSON(allPlayers)
-	WriteTeamJSON(allCollegeTeams)
 }
 
 func WritePlayerJSON(data []Player) {

@@ -62,12 +62,7 @@ func SeedPlayerData() {
 
 	for i := range docs {
 		doc := docs[i]
-		result, insertErr := col.InsertOne(ctx, doc)
-		if insertErr != nil {
-			fmt.Println(insertErr)
-		} else {
-			fmt.Println(result)
-		}
+		col.InsertOne(ctx, doc)
 	}
 
 	fmt.Println("playerdata.json seeding finished.")

@@ -5,24 +5,25 @@ option go_package = "github.com/jordanx8/webscraper";
 package webscraper;
 
 service webscraperService {
-    rpc SayHello (HelloRequest) returns (HelloReply) {}
+    rpc GetPlayers (PlayerRequest) returns (PlayerArray) {}
 }
 
 message Player {
-    int32 rank = 1;
-    string name = 2;
-    string school = 3;
-    string position = 4;
+  int32 rank = 1;
+  string name = 2;
+  string school = 3;
+  string position = 4;
+  string nextgame = 5;
 }
 
+message PlayerRequest{
+  int32 rank = 1;
+  string name = 2;
+  string school = 3;
+  string position = 4;
+}
 
-// The request message containing the user's name.
-message HelloRequest {
-    string name = 1;
-  }
-  
-  // The response message containing the greetings
-  message HelloReply {
-    string message = 1;
-  }
+message PlayerArray{
+	repeated Player players = 1;
+}
   

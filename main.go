@@ -16,8 +16,8 @@ import (
 
 func main() {
 	fmt.Println("App starting")
-	// webscraper.ScrapeESPNTop100()
-	// seeder.SeedPlayerData()
+	//webscraper.ScrapeESPNTop100()
+	//seeder.SeedPlayerData()
 
 	ctx := context.Background()
 	log.Println("starting up")

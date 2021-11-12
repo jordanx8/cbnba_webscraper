@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WebscraperServiceClient interface {
 	GetPlayers(ctx context.Context, in *PlayerRequest, opts ...grpc.CallOption) (*PlayerArray, error)
+	ScrapeAndSeed(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ScrapeAndSeedResponse, error)
 }
 
 type webscraperServiceClient struct {
@@ -38,11 +39,21 @@ func (c *webscraperServiceClient) GetPlayers(ctx context.Context, in *PlayerRequ
 	return out, nil
 }
 
+func (c *webscraperServiceClient) ScrapeAndSeed(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ScrapeAndSeedResponse, error) {
+	out := new(ScrapeAndSeedResponse)
+	err := c.cc.Invoke(ctx, "/webscraper.webscraperService/ScrapeAndSeed", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WebscraperServiceServer is the server API for WebscraperService service.
 // All implementations must embed UnimplementedWebscraperServiceServer
 // for forward compatibility
 type WebscraperServiceServer interface {
 	GetPlayers(context.Context, *PlayerRequest) (*PlayerArray, error)
+	ScrapeAndSeed(context.Context, *Empty) (*ScrapeAndSeedResponse, error)
 	mustEmbedUnimplementedWebscraperServiceServer()
 }
 
@@ -52,6 +63,9 @@ type UnimplementedWebscraperServiceServer struct {
 
 func (UnimplementedWebscraperServiceServer) GetPlayers(context.Context, *PlayerRequest) (*PlayerArray, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPlayers not implemented")
+}
+func (UnimplementedWebscraperServiceServer) ScrapeAndSeed(context.Context, *Empty) (*ScrapeAndSeedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ScrapeAndSeed not implemented")
 }
 func (UnimplementedWebscraperServiceServer) mustEmbedUnimplementedWebscraperServiceServer() {}
 
@@ -84,6 +98,24 @@ func _WebscraperService_GetPlayers_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WebscraperService_ScrapeAndSeed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebscraperServiceServer).ScrapeAndSeed(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/webscraper.webscraperService/ScrapeAndSeed",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebscraperServiceServer).ScrapeAndSeed(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WebscraperService_ServiceDesc is the grpc.ServiceDesc for WebscraperService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -94,6 +126,10 @@ var WebscraperService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPlayers",
 			Handler:    _WebscraperService_GetPlayers_Handler,
+		},
+		{
+			MethodName: "ScrapeAndSeed",
+			Handler:    _WebscraperService_ScrapeAndSeed_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

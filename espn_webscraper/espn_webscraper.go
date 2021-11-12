@@ -27,7 +27,7 @@ type CollegeTeam struct {
 	ID   string `json:"id"`
 }
 
-func ScrapeESPNTop100() {
+func ScrapeESPNTop100() error {
 	fmt.Println("ScrapeESPNTop100()")
 
 	allPlayers := make([]Player, 0)
@@ -65,8 +65,13 @@ func ScrapeESPNTop100() {
 			Position: element.ChildText("span.draftTable__headline--pos"),
 			NextGame: GetNextEvent(element.ChildText("span.draftTable__headline--school"), allCollegeTeams),
 		}
+		if player.School == "" {
+			player.School = "n/a"
+			player.NextGame = ""
+		}
 
 		allPlayers = append(allPlayers, player)
+
 	})
 
 	collector.OnRequest(func(request *colly.Request) {
@@ -81,19 +86,21 @@ func ScrapeESPNTop100() {
 	collector.Visit("https://www.espn.com/mens-college-basketball/teams")
 	collector.Visit("https://www.espn.com/nba/draft/bestavailable/_/position/ovr/page/1")
 
-	WritePlayerJSON(allPlayers)
+	err := WritePlayerJSON(allPlayers)
+	return err
 }
 
-func WritePlayerJSON(data []Player) {
+func WritePlayerJSON(data []Player) error {
 	fmt.Println("Attempting to create playerdata.json.")
 	file, err := json.MarshalIndent(data, "", " ")
 	if err != nil {
 		fmt.Println("Unable to create JSON file.")
-		return
+		return err
 	}
 
 	_ = ioutil.WriteFile("./playerdata.json", file, 0644)
 	fmt.Println("Success.")
+	return err
 }
 
 func WriteTeamJSON(data []CollegeTeam) {

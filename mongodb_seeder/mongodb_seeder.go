@@ -21,7 +21,7 @@ type Player struct {
 	NextGame string `json:"nextGame"`
 }
 
-func SeedPlayerData() {
+func SeedPlayerData() error {
 
 	fmt.Println("SeedPlayerData()")
 
@@ -66,5 +66,5 @@ func SeedPlayerData() {
 	}
 
 	fmt.Println("playerdata.json seeding finished.")
-
+	return err
 }

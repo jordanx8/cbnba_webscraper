@@ -6,6 +6,7 @@ package webscraper;
 
 service webscraperService {
     rpc GetPlayers (PlayerRequest) returns (PlayerArray) {}
+    rpc ScrapeAndSeed (Empty) returns (ScrapeAndSeedResponse) {}
 }
 
 message Player {
@@ -25,5 +26,12 @@ message PlayerRequest{
 
 message PlayerArray{
 	repeated Player players = 1;
+}
+
+message ScrapeAndSeedResponse{
+  int32 success = 1;
+}
+
+message Empty {
 }
   

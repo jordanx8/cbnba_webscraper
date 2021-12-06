@@ -18,6 +18,5 @@ func (s WebscraperService) ScrapeAndSeed(ctx context.Context, empty *pb.Empty) (
 	if err != nil {
 		return &pb.ScrapeAndSeedResponse{Success: 0}, err
 	}
-
 	return &pb.ScrapeAndSeedResponse{Success: 1}, err
 }

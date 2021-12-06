@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"reflect"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -58,7 +57,6 @@ func SeedPlayerData() error {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(reflect.TypeOf(docs))
 
 	for i := range docs {
 		doc := docs[i]

@@ -30,13 +30,13 @@ func (s WebscraperService) GetPlayers(ctx context.Context, playerRequest *pb.Pla
 
 	var filters bson.D
 	if playerRequest.GetName() != "" {
-		filters = append(filters, primitive.E{Key: "name", Value: bson.M{"$regex": playerRequest.GetName()}})
+		filters = append(filters, primitive.E{Key: "name", Value: bson.M{"$regex": playerRequest.GetName(), "$options": "i"}})
 	}
 	if playerRequest.GetPosition() != "" {
 		filters = append(filters, primitive.E{Key: "position", Value: bson.M{"$regex": playerRequest.GetPosition()}})
 	}
 	if playerRequest.GetSchool() != "" {
-		filters = append(filters, primitive.E{Key: "school", Value: bson.M{"$regex": playerRequest.GetSchool()}})
+		filters = append(filters, primitive.E{Key: "school", Value: bson.M{"$regex": playerRequest.GetSchool(), "$options": "i"}})
 	}
 	if playerRequest.GetRank() != 0 {
 		filters = append(filters, primitive.E{Key: "rank", Value: bson.M{"$eq": playerRequest.GetRank()}})

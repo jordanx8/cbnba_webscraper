@@ -133,5 +133,5 @@ var WebscraperService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/playerstuff.proto",
+	Metadata: "playerstuff.proto",
 }

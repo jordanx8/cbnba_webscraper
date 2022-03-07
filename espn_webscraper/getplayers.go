@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
+	"time"
 
 	pb "github.com/jordanx8/webscraper/proto"
 	"go.mongodb.org/mongo-driver/bson"
@@ -51,6 +53,23 @@ func (s WebscraperService) GetPlayers(ctx context.Context, playerRequest *pb.Pla
 	for x < len(players) {
 		players[x].Nextgame = string(players[x].Nextgame)
 		x++
+	}
+
+	if playerRequest.GetOrderByDate() {
+		sort.Slice(players, func(i, j int) bool {
+			a, err := time.Parse(time.UnixDate, string(players[i].Nextgame))
+			if err != nil {
+				a = time.Time{}
+				return false
+			}
+			b, err := time.Parse(time.UnixDate, string(players[j].Nextgame))
+			if err != nil {
+				b = time.Time{}
+				return true
+			}
+			return a.Before(b)
+		})
+		return &pb.PlayerArray{Players: players}, err
 	}
 
 	return &pb.PlayerArray{Players: players}, err

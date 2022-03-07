@@ -22,6 +22,7 @@ message PlayerRequest{
   string name = 2;
   string school = 3;
   string position = 4;
+  bool orderByDate = 5;
 }
 
 message PlayerArray{
